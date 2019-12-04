@@ -1,33 +1,44 @@
-use std::fs::File;
-use std::io::{self, prelude::*, BufReader};
+use std::error::Error;
+
+extern crate clap;
+use clap::{Arg, App, value_t};
+
+mod challenges;
+pub use crate::challenges::day1;
 
 
-fn main() -> io::Result<()> {
-    let file = File::open("input/mass.txt")?;
-    let reader = BufReader::new(file);
-    let mut running_total = 0; 
+fn main() -> Result<(), Box<dyn Error>> {
+    let matches = App::new("AdventOfCode2019")
+        .version("1.0")
+        .author("Tomas Farias")
+        .arg(Arg::with_name("day")
+             .short("d")
+             .takes_value(true)
+             .help("Sets the challenge day")
+             .required(true))
+        .arg(Arg::with_name("part")
+             .short("p")
+             .takes_value(true)
+             .help("Sets the part of the challenge to complete"))
+        .arg(Arg::with_name("input")
+             .short("i")
+             .takes_value(true)
+             .help("Sets the path to the challenge input file"))
+        .get_matches();
 
-    for line in reader.lines() {
-        let mass = match line?.parse::<i32>() { 
-            Ok(x) => x,
-            Err(_) => 0,
-        };
-        let mut fuel = fuel_counter_upper(mass);
+    let day = value_t!(matches.value_of("day"), i32).unwrap_or_else(|e| e.exit());
+    let part = value_t!(matches.value_of("part"), i32).unwrap_or_else(|_| 1);
+    let input = matches.value_of("input").unwrap_or_else(|| "");
 
-        while fuel > 0 {
-            running_total += fuel;
-            fuel = fuel_counter_upper(fuel);
-        }
+    let result = match day {
+        1 => day1::run(input, part).unwrap(),
+        _ => {
+            println!("The day {} challenge has not been solved yet", day);
+            return Ok(());
+        },
+    };
 
-    }
-
-    println!("Total fuel: {}", running_total);
+    println!("Day {} challenge, part {}\n {}", day, part, result);
     Ok(())
 }
-
-fn fuel_counter_upper(mass: i32) -> i32{ 
-    mass / 3 - 2
-}
-
-
 
