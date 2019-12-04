@@ -25,20 +25,15 @@ fn main() -> Result<(), Box<dyn Error>> {
              .short("i")
              .takes_value(true)
              .help("Sets the path to the challenge input file"))
-        .arg(Arg::with_name("args")
-             .short("a")
-             .takes_value(true)
-             .help("Sets specific challenge arguments, separated by a comma"))
-        .get_matches();
+       .get_matches();
 
     let day = value_t!(matches.value_of("day"), i32).unwrap_or_else(|e| e.exit());
     let part = value_t!(matches.value_of("part"), i32).unwrap_or_else(|_| 1);
     let input = matches.value_of("input").unwrap_or_else(|| "");
-    let args = matches.value_of("args").unwrap_or_else(|| "");
 
     let result = match day {
         1 => day1::run(input, part).unwrap(),
-        2 => day2::run(input, part, args).unwrap(),
+        2 => day2::run(input, part).unwrap(),
         _ => {
             println!("The day {} challenge has not been solved yet", day);
             return Ok(());

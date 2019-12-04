@@ -2,7 +2,7 @@ use std::fs;
 use std::error::Error;
 
 
-pub fn run(input: &str, part: i32, args: &str) -> Result<String, Box<dyn Error>> {
+pub fn run(input: &str, part: i32) -> Result<String, Box<dyn Error>> {
     let contents = fs::read_to_string(input)?;
     let mut intcode: Vec<i32> = contents.split(",")
         .map(|s| s.trim())
@@ -18,7 +18,7 @@ pub fn run(input: &str, part: i32, args: &str) -> Result<String, Box<dyn Error>>
         return Ok(format!("Intcode program result: {}", intcode[0]));
 
     } else {
-        let target = args.parse::<i32>().unwrap();
+        let target = 19690720;
 
         for noun in 0..100 {
             for verb in 0..100 {
