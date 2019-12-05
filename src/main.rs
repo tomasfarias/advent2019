@@ -1,46 +1,96 @@
 use std::error::Error;
 
 extern crate clap;
-use clap::{Arg, App, value_t};
+use clap::{Arg, App, SubCommand, value_t};
 
 mod challenges;
 pub use crate::challenges::day1;
 pub use crate::challenges::day2;
 
-
 fn main() -> Result<(), Box<dyn Error>> {
     let matches = App::new("AdventOfCode2019")
         .version("1.0")
         .author("Tomas Farias")
-        .arg(Arg::with_name("day")
-             .short("d")
-             .takes_value(true)
-             .help("Sets the challenge day")
-             .required(true))
-        .arg(Arg::with_name("part")
-             .short("p")
-             .takes_value(true)
-             .help("Sets the part of the challenge to complete"))
-        .arg(Arg::with_name("input")
-             .short("i")
-             .takes_value(true)
-             .help("Sets the path to the challenge input file"))
-       .get_matches();
+        .subcommand(SubCommand::with_name("day1")
+                    .about("Day 1 challenge")
+                    .arg(Arg::with_name("input")
+                         .short("i")
+                         .takes_value(true)
+                         .required(true)
+                         .help("Sets the path to the challenge input file"))
+                    .subcommand(SubCommand::with_name("part1"))
+                    .subcommand(SubCommand::with_name("part2")))
+        .subcommand(SubCommand::with_name("day2")
+                    .about("Day 2 challenge")
+                    .arg(Arg::with_name("input")
+                         .short("i")
+                         .takes_value(true)
+                         .required(true)
+                         .help("Sets the path to the challenge input file"))
+                    .subcommand(SubCommand::with_name("part1")
+                                .arg(Arg::with_name("noun")
+                                     .short("n")
+                                     .takes_value(true)
+                                     .required(true)
+                                     .help("Sets the intcode machine noun"))
+                                .arg(Arg::with_name("verb")
+                                     .short("v")
+                                     .takes_value(true)
+                                     .required(true)
+                                     .help("Sets the intcode machine verb")))
+                    .subcommand(SubCommand::with_name("part2")
+                                .arg(Arg::with_name("target")
+                                     .short("t")
+                                     .takes_value(true)
+                                     .required(true)
+                                     .help("Sets the intcode machine target"))))
+        .get_matches();
 
-    let day = value_t!(matches.value_of("day"), i32).unwrap_or_else(|e| e.exit());
-    let part = value_t!(matches.value_of("part"), i32).unwrap_or_else(|_| 1);
-    let input = matches.value_of("input").unwrap_or_else(|| "");
+   let result = match matches.subcommand() {
+        ("day1", Some(day1_matches)) => {
+            let input = day1_matches.value_of("input").unwrap();
+            
+            match day1_matches.subcommand() {
+                ("part1", _) => {
+                    day1::run(input, 1).unwrap()
+                },
+                ("part2", _) => {
+                    day1::run(input, 2).unwrap()
+                },
+                _ => {
+                     println!("Unrecognized command or unsolved day 2 challenge part");
+                     return Ok(());
+                },
+            }
+        },
+        ("day2", Some(day2_matches)) => {
+            let input = day2_matches.value_of("input").unwrap();
+            
+            match day2_matches.subcommand() {
+                 ("part1", Some(day2_part1_matches)) => {
+                     let noun = value_t!(day2_part1_matches.value_of("noun"), i32).unwrap();
+                     let verb = value_t!(day2_part1_matches.value_of("verb"), i32).unwrap();
+                     
+                     day2::run_part1(input, noun, verb).unwrap()
+                 },
+                 ("part2", Some(day2_part2_matches)) => {
+                     let target = value_t!(day2_part2_matches.value_of("target"), i32).unwrap();
 
-    let result = match day {
-        1 => day1::run(input, part).unwrap(),
-        2 => day2::run(input, part).unwrap(),
+                     day2::run_part2(input, target).unwrap()
+                 },
+                 _ => {
+                     println!("Unrecognized command or unsolved day 2 challenge part");
+                     return Ok(());
+                },
+            }
+        },
         _ => {
-            println!("The day {} challenge has not been solved yet", day);
+            println!("Unrecognized command or unsolved day challenge");
             return Ok(());
         },
     };
 
-    println!("Day {} challenge, part {}\n {}", day, part, result);
+    println!("{}", result);
     Ok(())
 }
 
