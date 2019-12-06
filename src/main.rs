@@ -52,7 +52,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                          .takes_value(true)
                          .required(true)
                          .help("Sets the path to the challenge input file"))
-                    .subcommand(SubCommand::with_name("part1")))
+                    .subcommand(SubCommand::with_name("part1"))
+                    .subcommand(SubCommand::with_name("part2"))) 
         .get_matches();
 
    let result = match matches.subcommand() {
@@ -100,9 +101,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                 ("part1", _) => {
                     day3::run_part1(input).unwrap()
                 },
-                // ("part2", _) => {
-                //    day3::run_part2(input).unwrap()
-                //},
+                ("part2", _) => {
+                    day3::run_part2(input).unwrap()
+                },
                 _ => {
                      println!("Unrecognized command or unsolved day 3 challenge part");
                      return Ok(());
