@@ -7,6 +7,7 @@ mod challenges;
 pub use crate::challenges::day1;
 pub use crate::challenges::day2;
 pub use crate::challenges::day3;
+pub use crate::challenges::day4;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let matches = App::new("AdventOfCode2019")
@@ -54,6 +55,15 @@ fn main() -> Result<(), Box<dyn Error>> {
                          .help("Sets the path to the challenge input file"))
                     .subcommand(SubCommand::with_name("part1"))
                     .subcommand(SubCommand::with_name("part2"))) 
+        .subcommand(SubCommand::with_name("day4")
+                    .about("Day 4 challenge")
+                    .arg(Arg::with_name("input")
+                         .short("i")
+                         .takes_value(true)
+                         .required(true)
+                         .help("Sets the path to the challenge input file"))
+                    .subcommand(SubCommand::with_name("part1"))
+                    .subcommand(SubCommand::with_name("part2")))  
         .get_matches();
 
    let result = match matches.subcommand() {
@@ -106,6 +116,22 @@ fn main() -> Result<(), Box<dyn Error>> {
                 },
                 _ => {
                      println!("Unrecognized command or unsolved day 3 challenge part");
+                     return Ok(());
+                },
+            }
+        },
+        ("day4", Some(day4_matches)) => {
+            let input = day4_matches.value_of("input").unwrap();
+
+            match day4_matches.subcommand() {
+                ("part1", _) => {
+                    day4::run_part1(input).unwrap()
+                },
+                //("part2", _) => {
+                //    day4::run_part2(input).unwrap()
+                //},
+                _ => {
+                     println!("Unrecognized command or unsolved day 4 challenge part");
                      return Ok(());
                 },
             }
