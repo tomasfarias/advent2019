@@ -127,9 +127,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                 ("part1", _) => {
                     day4::run_part1(input).unwrap()
                 },
-                //("part2", _) => {
-                //    day4::run_part2(input).unwrap()
-                //},
+                ("part2", _) => {
+                    day4::run_part2(input).unwrap()
+                },
                 _ => {
                      println!("Unrecognized command or unsolved day 4 challenge part");
                      return Ok(());
