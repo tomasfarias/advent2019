@@ -3,11 +3,11 @@ use std::error::Error;
 extern crate clap;
 use clap::{Arg, App, SubCommand, value_t};
 
-mod challenges;
-pub use crate::challenges::day1;
-pub use crate::challenges::day2;
-pub use crate::challenges::day3;
-pub use crate::challenges::day4;
+mod modules;
+pub use modules::day1;
+pub use modules::day2;
+pub use modules::day3;
+pub use modules::day4;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let matches = App::new("AdventOfCode2019")
