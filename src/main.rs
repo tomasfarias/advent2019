@@ -1,5 +1,7 @@
 use std::error::Error;
 
+#[macro_use] extern crate text_io;
+
 extern crate clap;
 use clap::{Arg, App, SubCommand, value_t};
 
@@ -8,6 +10,7 @@ pub use modules::day1;
 pub use modules::day2;
 pub use modules::day3;
 pub use modules::day4;
+pub use modules::day5;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let matches = App::new("AdventOfCode2019")
@@ -64,6 +67,15 @@ fn main() -> Result<(), Box<dyn Error>> {
                          .help("Sets the path to the challenge input file"))
                     .subcommand(SubCommand::with_name("part1"))
                     .subcommand(SubCommand::with_name("part2")))  
+        .subcommand(SubCommand::with_name("day5")
+                    .about("Day 5 challenge")
+                    .arg(Arg::with_name("input")
+                         .short("i")
+                         .takes_value(true)
+                         .required(true)
+                         .help("Sets the path to the challenge input file"))
+                    .subcommand(SubCommand::with_name("part1"))
+                    .subcommand(SubCommand::with_name("part2")))   
         .get_matches();
 
    let result = match matches.subcommand() {
@@ -130,6 +142,22 @@ fn main() -> Result<(), Box<dyn Error>> {
                 ("part2", _) => {
                     day4::run_part2(input).unwrap()
                 },
+                _ => {
+                     println!("Unrecognized command or unsolved day 4 challenge part");
+                     return Ok(());
+                },
+            }
+        },
+        ("day5", Some(day5_matches)) => {
+            let input = day5_matches.value_of("input").unwrap();
+
+            match day5_matches.subcommand() {
+                ("part1", _) => {
+                    day5::run_part1(input).unwrap()
+                },
+                // ("part2", _) => {
+                //    day5::run_part2(input).unwrap()
+                //},
                 _ => {
                      println!("Unrecognized command or unsolved day 4 challenge part");
                      return Ok(());

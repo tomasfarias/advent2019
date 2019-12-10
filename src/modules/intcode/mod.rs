@@ -1,5 +1,10 @@
+use log::*;
 use std::fs;
 use std::error::Error;
+use std::convert::TryInto;
+
+extern crate simplelog;
+use simplelog::{CombinedLogger, TermLogger, LevelFilter, Config, TerminalMode};
 
 pub fn build_intcode_from_input(input: &str) -> Result<IntCode, Box<dyn Error>> {
     let contents = fs::read_to_string(input)?;
@@ -8,6 +13,11 @@ pub fn build_intcode_from_input(input: &str) -> Result<IntCode, Box<dyn Error>> 
         .filter(|s| !s.is_empty())
         .map(|s| s.parse::<i32>().unwrap())
         .collect();
+    
+    CombinedLogger::init(vec![
+        TermLogger::new(LevelFilter::Info, Config::default(), TerminalMode::Mixed).unwrap(),
+        TermLogger::new(LevelFilter::Warn, Config::default(), TerminalMode::Mixed).unwrap(),
+    ]).unwrap();
 
     Ok(IntCode {
         instructions: instructions,
@@ -38,25 +48,85 @@ impl IntCode {
             return;
         }
 
-        let opcode = self.instructions[self.index];
-        if opcode == 99 {
-            self.state = "terminated".to_string();
-            return;
-        }
+        let instruction = self.instructions[self.index];
+        let opcode = instruction % 100;
 
-        let first = self.instructions[self.index + 1];
-        let second = self.instructions[self.index + 2];
-        let target = self.instructions[self.index + 3];
-    
-        let result = match opcode {
-            1 => self.instructions[first as usize] + self.instructions[second as usize],
-            2 => self.instructions[first as usize] * self.instructions[second as usize],
-            _ => { return; },
+        let advance = match opcode {
+            1 => self.op1(),
+            2 => self.op2(),
+            3 => self.op3(),
+            4 => self.op4(),
+            _ => { // should probably error if opcode != 99
+                self.state = "terminated".to_string();
+                return; 
+            },
         };
-        
-        self.instructions[target as usize] = result;
+ 
         self.state = "running".to_string();
-        self.index = (self.index + 4) as usize;
+        self.index = self.index + advance as usize;
+    }
+
+    fn op1(&mut self) -> i32 {
+        let first = self.get_value(1).unwrap();
+        let second = self.get_value(2).unwrap();
+        let target = self.instructions[self.index + 3]; // in day2, target is mode 1, but input doesn't contain mode
+
+        self.instructions[target as usize] = first + second;
+ 
+        4
+    }
+
+    fn op2(&mut self) -> i32 {
+        let first = self.get_value(1).unwrap();
+        let second = self.get_value(2).unwrap();
+        let target = self.instructions[self.index + 3];
+
+        self.instructions[target as usize] = first * second;
+    
+        4
+    }
+
+    fn op3(&mut self) -> i32 {
+        let target = self.get_value(1).unwrap();
+        let input: i32 = read!();
+        
+        self.instructions[target as usize] = input;
+
+        2
+    }
+
+    fn op4(&mut self) -> i32 {
+        let value = self.get_value(1).unwrap();
+        
+        match value {
+            0 => {
+                info!("Test {} successful: {}", self.index, value);
+            },
+            _ => {
+                warn!("Test {} finished with non-zero code: {}", self.index, value);
+            }
+        }
+        
+        2
+    }
+    
+    fn get_value(&mut self, offset: i32) -> Result<i32, i32> {
+        let index_or_value = self.instructions[self.index + offset as usize];
+        let mode = self.get_mode(offset - 1);
+
+        match mode {
+            0 => {
+                return Ok(self.instructions[index_or_value as usize]);
+            },
+            1 => {
+                return Ok(index_or_value);
+            },
+            _ => Err(-1)
+        }
+    }
+
+    fn get_mode(&mut self, number: i32) -> i32 {
+        self.instructions[self.index] / (100 * 10_i32.pow(number.try_into().unwrap())) % 10
     }
 
     pub fn run(&mut self) {
