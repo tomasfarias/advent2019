@@ -41,7 +41,7 @@ impl IntCode {
 
         let instruction = self.instructions[self.index];
         let opcode = instruction % 100;
-
+        println!("{}", opcode);
         let advance = match opcode {
             1 => self.op1(),
             2 => self.op2(),
@@ -78,8 +78,8 @@ impl IntCode {
     }
 
     fn op3(&mut self) -> i32 {
-        let target = self.instructions[self.index + 1];
-        let input: i32 = read!();       
+        let target = self.get_value(1).unwrap();
+        let input: i32 = read!();
         
         self.instructions[target as usize] = input;
 
