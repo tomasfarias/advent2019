@@ -41,12 +41,16 @@ impl IntCode {
 
         let instruction = self.instructions[self.index];
         let opcode = instruction % 100;
-
+        
         let advance = match opcode {
             1 => self.op1(),
             2 => self.op2(),
             3 => self.op3(),
             4 => self.op4(),
+            5 => self.op5(),
+            6 => self.op6(),
+            7 => self.op7(),
+            8 => self.op8(),
             _ => { // should probably error if opcode != 99
                 self.state = "terminated".to_string();
                 return; 
@@ -100,7 +104,58 @@ impl IntCode {
         
         2
     }
+
+    fn op5(&mut self) -> i32 {
+        let first = self.get_value(1).unwrap();
+        let new_index = self.get_value(2).unwrap();
+
+        if first == 0 {
+            return 3;
+        }
+
+        new_index - self.index as i32
+    }
     
+    fn op6(&mut self) -> i32 {
+        let first = self.get_value(1).unwrap();
+        let new_index = self.get_value(2).unwrap();
+
+        if first != 0 {
+            return 3;
+        }
+
+        new_index - self.index as i32
+    }
+
+    fn op7(&mut self) -> i32 {
+        let first = self.get_value(1).unwrap();
+        let second = self.get_value(2).unwrap();
+        let target = self.instructions[self.index + 3];
+
+        if first < second {
+            self.instructions[target as usize] = 1;
+        } else {
+            self.instructions[target as usize] = 0;
+        }
+
+        4
+    }
+
+    fn op8(&mut self) -> i32 {
+        let first = self.get_value(1).unwrap();
+        let second = self.get_value(2).unwrap();
+        let target = self.instructions[self.index + 3];
+
+        if first == second {
+            self.instructions[target as usize] = 1;
+        } else {
+            self.instructions[target as usize] = 0;
+        }
+
+        4
+    }
+
+
     fn get_value(&mut self, offset: i32) -> Result<i32, i32> {
         let index_or_value = self.instructions[self.index + offset as usize];
         let mode = self.get_mode(offset - 1);
