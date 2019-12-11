@@ -11,6 +11,7 @@ pub use modules::day2;
 pub use modules::day3;
 pub use modules::day4;
 pub use modules::day5;
+pub use modules::day6;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let matches = App::new("AdventOfCode2019")
@@ -74,6 +75,13 @@ fn main() -> Result<(), Box<dyn Error>> {
                          .takes_value(true)
                          .required(true)
                          .help("Sets the path to the challenge input file")))   
+        .subcommand(SubCommand::with_name("day6")
+                    .about("Day 6 challenge")
+                    .arg(Arg::with_name("input")
+                         .short("i")
+                         .takes_value(true)
+                         .required(true)
+                         .help("Sets the path to the challenge input file")))    
         .get_matches();
 
    let result = match matches.subcommand() {
@@ -150,6 +158,10 @@ fn main() -> Result<(), Box<dyn Error>> {
             let input = day5_matches.value_of("input").unwrap();
             day5::run(input).unwrap()
         },
+        ("day6", Some(day6_matches)) => {
+            let input = day6_matches.value_of("input").unwrap();
+            day6::run(input).unwrap()
+        }, 
         _ => {
             println!("Unrecognized command or unsolved day challenge");
             return Ok(());
