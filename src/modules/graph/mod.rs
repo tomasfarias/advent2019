@@ -7,22 +7,26 @@ pub struct Graph {
 }
 
 impl Graph {
-    pub fn bfs(self, source_id: &str) -> HashMap<String, i32> {
+    pub fn bfs(self, source_id: &str) -> (HashMap<String, i32>, HashMap<String, String>) {
         let mut frontier: Vec<String> = vec![source_id.to_string()];
         let mut depths: HashMap<String, i32> = HashMap::new();
+        let mut paths: HashMap<String, String> = HashMap::new();
         let mut level = 1;
+        
         depths.insert(source_id.to_string(), 0);
+        paths.insert(source_id.to_string(), "".to_string());
         
         while !frontier.is_empty() {
             let mut next: Vec<String> = Vec::new();
             
-            for node_id in frontier {
-                if let Some(node) = self.nodes.get(&node_id) {
+            for node_id in frontier.iter() {
+                if let Some(node) = self.nodes.get(node_id) {
                     
                     for neighbor in node.neighbors.iter() {
                         if !depths.contains_key(&neighbor.to_string()) {
                             depths.insert(neighbor.to_string(), level);
                             next.push(neighbor.to_string());
+                            paths.insert(neighbor.to_string(), node_id.to_string());
                         }
                     }
                 }
@@ -32,10 +36,11 @@ impl Graph {
             level += 1;
         }
 
-        depths
+        (depths, paths)
     }
 }
 
+#[derive(Debug)]
 struct Node {
     neighbors: Vec<String>,
 }
@@ -53,21 +58,34 @@ pub fn build_graph_from_orbit_input(input: &str) -> Result<Graph, io::Error> {
             .collect();
         
         match node_map.get_mut(&objects[0].to_string()) {
-            Some(ref mut parent) => {
-                parent.neighbors.push(objects[1].to_string());
+            Some(ref mut node) => {
+                node.neighbors.push(objects[1].to_string());
             }
             None => { 
-                let parent = Node {
+                let node = Node {
                     neighbors: vec![objects[1].to_string()],
                 };
-                node_map.insert(objects[0].to_string(), parent); 
-                continue;
+                node_map.insert(objects[0].to_string(), node); 
             }
         }
+
+        match node_map.get_mut(&objects[1].to_string()) {
+            Some(ref mut node) => {
+                node.neighbors.push(objects[0].to_string());
+            }
+            None => { 
+                let node = Node {
+                    neighbors: vec![objects[0].to_string()],
+                };
+                node_map.insert(objects[1].to_string(), node);
+            }
+        }    
     }
 
-    Ok(Graph {
-        nodes: node_map,
-    })
+    Ok(
+        Graph {
+            nodes: node_map,
+        }
+    )
 } 
 
